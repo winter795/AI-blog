@@ -1,0 +1,33 @@
+# ===== Java / Maven =====
+backend/target/
+*.class
+*.jar
+*.war
+*.log
+
+# ===== Node / Vue =====
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+*.local
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# ===== Secrets =====
+backend/src/main/resources/application.yml
+frontend/.env
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ===== Uploads =====
+uploads/

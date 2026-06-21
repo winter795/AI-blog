@@ -1,0 +1,118 @@
+/* ── Design Read ──
+   Editorial blog, monochrome + forest green accent,
+   sans-serif display (Outfit), JetBrains Mono for code.
+   VARIANCE=6 MOTION=4 DENSITY=3
+   Palette: cool off-white + near-black + deep forest green.
+   NOT in the banned premium-consumer beige+brass family (§4.2). ── */
+
+:root {
+  --bg: #FAFAF9;
+  --card-bg: #FFFFFF;
+  --text: #1A1A1A;
+  --text-secondary: #6B6B6B;
+  --text-muted: #999999;
+  --border: #E8E8E6;
+  --accent: #2D6A4F;
+  --accent-hover: #1B4332;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --font-display: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Outfit', system-ui, sans-serif;
+  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark {
+  --bg: #0F0F0F;
+  --card-bg: #1A1A1A;
+  --text: #EDEDED;
+  --text-secondary: #A0A0A0;
+  --text-muted: #707070;
+  --border: #2A2A2A;
+  --accent: #40916C;
+  --accent-hover: #52B788;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: color var(--transition);
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+p {
+  max-width: 65ch;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Element Plus overrides ── */
+.el-table {
+  --el-table-bg-color: var(--card-bg);
+  --el-table-tr-bg-color: var(--card-bg);
+  --el-table-header-bg-color: var(--bg);
+  --el-table-border-color: var(--border);
+  --el-table-text-color: var(--text);
+  --el-table-row-hover-bg-color: var(--bg);
+}
+.el-pagination {
+  --el-pagination-bg-color: transparent;
+  --el-pagination-text-color: var(--text-secondary);
+}
+.el-dialog { --el-dialog-bg-color: var(--card-bg); }
+.el-input__wrapper {
+  background: var(--bg) !important;
+  box-shadow: inset 0 0 0 1px var(--border) !important;
+}
+.el-input__inner { color: var(--text) !important; }
+.el-select .el-input__wrapper { background: var(--bg) !important; }
+.el-button--default {
+  --el-button-bg-color: var(--card-bg);
+  --el-button-border-color: var(--border);
+  --el-button-text-color: var(--text-secondary);
+}
+.el-radio-button__inner {
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
