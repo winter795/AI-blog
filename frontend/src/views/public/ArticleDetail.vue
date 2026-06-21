@@ -60,23 +60,41 @@ import CommentSection from '@/components/CommentSection.vue'
 const route = useRoute()
 const art = ref(null), tags = ref([]), prev = ref({}), next = ref({}), toc = ref([]), liked = ref(false)
 
-marked.setOptions({
-  highlight: (code, lang) => {
-    if (lang && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang }).value
-    return hljs.highlightAuto(code).value
-  },
-})
-
 const html = computed(() => {
   if (!art.value?.content) return ''
   const hs = []
+
+  // 用 lexer 提取标题
   const tokens = marked.lexer(art.value.content)
-  tokens.forEach(t => { if (t.type === 'heading' && t.depth <= 3) { const id = 'h-' + Math.random().toString(36).slice(2,8); hs.push({ id, level: t.depth, text: t.text }) } })
+  tokens.forEach(t => {
+    if (t.type === 'heading' && t.depth <= 3) {
+      const text = (t.tokens || []).map(tk => tk.text || tk.raw || '').join('') || t.text || ''
+      if (text) hs.push({ id: 'h-' + Math.random().toString(36).slice(2, 8), level: t.depth, text })
+    }
+  })
   toc.value = hs
-  const renderer = new marked.Renderer()
-  let i = 0
-  renderer.heading = ({ text, depth }) => { const h = hs[i++]; return `<h${depth} id="${h?.id || ''}">${text}</h${depth}>` }
-  return marked.parse(art.value.content, { renderer })
+
+  // 解析为 HTML
+  let result = marked.parse(art.value.content)
+
+  // 注入标题 ID
+  let hi = 0
+  result = result.replace(/<(h[1-3])>/g, (_, tag) => {
+    if (hi < hs.length) return `<${tag} id="${hs[hi++].id}">`
+    return `<${tag}>`
+  })
+
+  // 用 highlight.js 替换 <pre><code> 中的纯文本
+  result = result.replace(/<pre><code(?:\s+class="([^"]*)")?>([\s\S]*?)<\/code><\/pre>/g, (_, cls, text) => {
+    const lang = (cls || '').replace('language-', '').trim()
+    const language = (lang && hljs.getLanguage(lang)) ? lang : 'plaintext'
+    // text is HTML-escaped, decode it for hljs
+    const decoded = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    const highlighted = hljs.highlight(decoded, { language }).value
+    return `<pre><code class="hljs language-${lang}">${highlighted}</code></pre>`
+  })
+
+  return result
 })
 
 function jump(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }) }
@@ -112,9 +130,21 @@ onMounted(async () => {
 .art-content :deep(h2) { margin: 1.6em 0 0.5em; font-size: 22px; font-weight: 600; }
 .art-content :deep(h3) { margin: 1.2em 0 0.4em; font-size: 18px; font-weight: 600; }
 .art-content :deep(p) { margin: 0.8em 0; max-width: 100%; }
-.art-content :deep(pre) { background: #1e1e2e; padding: 18px 20px; border-radius: var(--radius-md); overflow-x: auto; margin: 16px 0; }
-.art-content :deep(code) { font-family: var(--font-mono); font-size: 13px; }
-.art-content :deep(:not(pre) > code) { background: var(--bg); padding: 2px 6px; border-radius: 3px; font-size: 13px; color: var(--accent); }
+.art-content :deep(pre) {
+  background: #0d1117; padding: 18px 20px; border-radius: var(--radius-md);
+  overflow-x: auto; margin: 16px 0; max-width: 100%;
+}
+.art-content :deep(pre code) {
+  font-family: var(--font-mono); font-size: 13px; color: #c9d1d9; line-height: 1.6;
+  white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 4;
+}
+.art-content :deep(pre code *) {
+  white-space: inherit; overflow-wrap: inherit;
+}
+.art-content :deep(:not(pre) > code) {
+  background: var(--bg); padding: 2px 6px; border-radius: 3px;
+  font-size: 13px; color: var(--accent); word-break: break-word;
+}
 .art-content :deep(blockquote) { border-left: 2px solid var(--accent); padding-left: 16px; color: var(--text-secondary); margin: 14px 0; }
 .art-content :deep(img) { max-width: 100%; border-radius: var(--radius-sm); }
 .like-bar { text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }

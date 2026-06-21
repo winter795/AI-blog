@@ -1,9 +1,5 @@
 import request from './index'
 
-export function getCaptcha() {
-  return request.get('/public/comment/captcha')
-}
-
 export function submitComment(data) {
   return request.post('/public/comment', null, { params: data })
 }
