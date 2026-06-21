@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 个人AI博客 (Personal AI Blog)
 
 Vue 3 + Spring Boot 构建的个人技术博客，集成了 AI 智能搜索与问答。
@@ -101,3 +102,7 @@ blog/
 | `ai.api-key` | DeepSeek API Key |
 
 **注意：** 真实 `application.yml` 已在 `.gitignore` 中排除，不会提交到 Git。
+=======
+# AI-blog
+基于 Vue3 + Spring Boot 的个人技术博客，集成 AI 智能搜索（RAG），支持文章管理、分类标签、Markdown 撰写。访客可用自然语言搜索博客内容，流式输出答案并显示引用来源。
+>>>>>>> f1aeae5222da5dcb06de1650504affaa5ba50a7c
