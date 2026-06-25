@@ -9,11 +9,11 @@ export function getArticle(id) {
 }
 
 export function saveArticle(data) {
-  return request.post('/article', data, { params: { tagIds: data.tagIds?.join(',') } })
+  return request.post('/article', data)
 }
 
 export function updateArticle(data) {
-  return request.put('/article', data, { params: { tagIds: data.tagIds?.join(',') } })
+  return request.put('/article', data)
 }
 
 export function deleteArticle(id) {

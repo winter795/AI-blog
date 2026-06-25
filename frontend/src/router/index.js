@@ -42,13 +42,11 @@ const router = createRouter({ history: createWebHistory(), routes })
 
 router.beforeEach((to) => {
   const token = localStorage.getItem('token')
-  const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null')
-  const role = userInfo?.role || 'guest'
-
-  if ((to.path.startsWith('/admin') || to.meta.needAuth) && !token) return '/login'
-  if (to.path.startsWith('/admin') && role !== 'admin') return '/visitor'
+  if (!token && (to.path.startsWith('/admin') || to.meta.needAuth)) {
+    return '/login'
+  }
   if (to.path === '/login' && token) {
-    return role === 'admin' ? '/admin' : '/visitor'
+    return '/visitor'
   }
 })
 

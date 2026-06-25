@@ -2,18 +2,19 @@ package com.personalblog.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.personalblog.dto.Result;
-import com.personalblog.entity.Article;
-import com.personalblog.entity.Category;
-import com.personalblog.entity.FriendLink;
-import com.personalblog.entity.Tag;
+import com.personalblog.entity.*;
 import com.personalblog.mapper.SiteConfigMapper;
 import com.personalblog.service.PublicService;
+import com.personalblog.vo.ArticleVO;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-import com.personalblog.entity.SiteConfig;
-
+@Validated
 @RestController
 @RequestMapping("/api/public")
 public class PublicController {
@@ -27,36 +28,42 @@ public class PublicController {
     }
 
     @GetMapping("/article/page")
-    public Result<Page<Article>> articlePage(
-            @RequestParam(defaultValue = "1") int pageNum,
-            @RequestParam(defaultValue = "10") int pageSize,
+    public Result<Page<ArticleVO>> articlePage(
+            @RequestParam(defaultValue = "1") @Min(1) int pageNum,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(50) int pageSize,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Long tagId,
             @RequestParam(required = false) String keyword) {
-        return Result.success(publicService.articlePage(pageNum, pageSize, categoryId, tagId, keyword));
+        Page<Article> page = publicService.articlePage(pageNum, pageSize, categoryId, tagId, keyword);
+        Page<ArticleVO> voPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        voPage.setRecords(page.getRecords().stream().map(ArticleVO::from).collect(Collectors.toList()));
+        return Result.success(voPage);
     }
 
     @GetMapping("/article/{id}")
     public Result<Map<String, Object>> articleDetail(@PathVariable Long id) {
         Article article = publicService.getArticle(id);
         List<Tag> tags = publicService.getArticleTags(id);
-        List<Article> prevNext = publicService.prevNext(id);
+        Article prev = publicService.getPrevArticle(id);
+        Article next = publicService.getNextArticle(id);
         return Result.success(Map.of(
-                "article", article,
+                "article", ArticleVO.from(article),
                 "tags", tags,
-                "prev", prevNext.get(0),
-                "next", prevNext.get(1)
+                "prev", ArticleVO.from(prev),
+                "next", ArticleVO.from(next)
         ));
     }
 
     @GetMapping("/article/latest")
-    public Result<List<Article>> latest(@RequestParam(defaultValue = "5") int n) {
-        return Result.success(publicService.latestArticles(n));
+    public Result<List<ArticleVO>> latest(@RequestParam(defaultValue = "5") int n) {
+        return Result.success(publicService.latestArticles(n).stream()
+                .map(ArticleVO::from).toList());
     }
 
     @GetMapping("/article/hot")
-    public Result<List<Article>> hot(@RequestParam(defaultValue = "5") int n) {
-        return Result.success(publicService.hotArticles(n));
+    public Result<List<ArticleVO>> hot(@RequestParam(defaultValue = "5") int n) {
+        return Result.success(publicService.hotArticles(n).stream()
+                .map(ArticleVO::from).toList());
     }
 
     @GetMapping("/category")

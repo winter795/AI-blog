@@ -7,13 +7,14 @@
         <p v-if="l.description">{{ l.description }}</p>
       </a>
     </div>
-    <p v-else class="empty">暂无友链，欢迎交换</p>
+    <EmptyState v-else text="暂无友链，欢迎交换" />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getFriendLinks } from '@/api/public'
+import EmptyState from '@/components/EmptyState.vue'
 const list = ref([])
 onMounted(async () => { const r = await getFriendLinks(); list.value = r.data })
 </script>
@@ -29,6 +30,5 @@ onMounted(async () => { const r = await getFriendLinks(); list.value = r.data })
 .link-item:hover { border-color: var(--accent); transform: translateY(-1px); }
 .link-item h3 { font-size: 15px; color: var(--text); margin-bottom: 4px; font-weight: 600; }
 .link-item p { font-size: 12px; color: var(--text-muted); }
-.empty { text-align: center; color: var(--text-muted); padding: 60px 0; font-size: 14px; }
 @media (max-width: 500px) { .links-grid { grid-template-columns: 1fr; } }
 </style>

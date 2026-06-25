@@ -16,10 +16,13 @@ public class ArticleService {
 
     private final ArticleMapper articleMapper;
     private final ArticleTagMapper articleTagMapper;
+    private final AiSearchService searchService;
 
-    public ArticleService(ArticleMapper articleMapper, ArticleTagMapper articleTagMapper) {
+    public ArticleService(ArticleMapper articleMapper, ArticleTagMapper articleTagMapper,
+                          AiSearchService searchService) {
         this.articleMapper = articleMapper;
         this.articleTagMapper = articleTagMapper;
+        this.searchService = searchService;
     }
 
     public Page<Article> page(int pageNum, int pageSize, String keyword, Integer status, Long categoryId) {
@@ -50,6 +53,7 @@ public class ArticleService {
                 articleTagMapper.insert(at);
             }
         }
+        searchService.refreshIndex();
     }
 
     @Transactional
@@ -66,6 +70,7 @@ public class ArticleService {
                 articleTagMapper.insert(at);
             }
         }
+        searchService.refreshIndex();
     }
 
     @Transactional
@@ -74,6 +79,7 @@ public class ArticleService {
         LambdaQueryWrapper<ArticleTag> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ArticleTag::getArticleId, id);
         articleTagMapper.delete(wrapper);
+        searchService.refreshIndex();
     }
 
     public void toggleStatus(Long id) {
@@ -81,6 +87,7 @@ public class ArticleService {
         if (article != null) {
             article.setStatus(article.getStatus() == 1 ? 0 : 1);
             articleMapper.updateById(article);
+            searchService.refreshIndex();
         }
     }
 

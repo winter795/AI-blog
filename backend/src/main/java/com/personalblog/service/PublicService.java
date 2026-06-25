@@ -61,28 +61,41 @@ public class PublicService {
     }
 
     public List<Article> latestArticles(int n) {
-        return articleMapper.selectList(new LambdaQueryWrapper<Article>()
-                .eq(Article::getStatus, 1)
-                .orderByDesc(Article::getCreatedAt).last("LIMIT " + n));
+        return articleMapper.selectPage(
+                new Page<>(1, n),
+                new LambdaQueryWrapper<Article>()
+                        .eq(Article::getStatus, 1)
+                        .orderByDesc(Article::getCreatedAt)
+        ).getRecords();
     }
 
     public List<Article> hotArticles(int n) {
-        return articleMapper.selectList(new LambdaQueryWrapper<Article>()
-                .eq(Article::getStatus, 1)
-                .orderByDesc(Article::getViewCount).last("LIMIT " + n));
+        return articleMapper.selectPage(
+                new Page<>(1, n),
+                new LambdaQueryWrapper<Article>()
+                        .eq(Article::getStatus, 1)
+                        .orderByDesc(Article::getViewCount)
+        ).getRecords();
     }
 
-    public List<Article> prevNext(Long id) {
-        Article current = articleMapper.selectById(id);
-        if (current == null) return List.of();
-        Article prev = articleMapper.selectOne(new LambdaQueryWrapper<Article>()
-                .eq(Article::getStatus, 1).lt(Article::getId, id)
-                .orderByDesc(Article::getId).last("LIMIT 1"));
-        Article next = articleMapper.selectOne(new LambdaQueryWrapper<Article>()
-                .eq(Article::getStatus, 1).gt(Article::getId, id)
-                .orderByAsc(Article::getId).last("LIMIT 1"));
-        return List.of(prev != null ? prev : new Article(),
-                       next != null ? next : new Article());
+    public Article getPrevArticle(Long id) {
+        if (articleMapper.selectById(id) == null) return null;
+        var page = articleMapper.selectPage(
+                new Page<>(1, 1),
+                new LambdaQueryWrapper<Article>()
+                        .eq(Article::getStatus, 1).lt(Article::getId, id)
+                        .orderByDesc(Article::getId));
+        return page.getRecords().isEmpty() ? null : page.getRecords().get(0);
+    }
+
+    public Article getNextArticle(Long id) {
+        if (articleMapper.selectById(id) == null) return null;
+        var page = articleMapper.selectPage(
+                new Page<>(1, 1),
+                new LambdaQueryWrapper<Article>()
+                        .eq(Article::getStatus, 1).gt(Article::getId, id)
+                        .orderByAsc(Article::getId));
+        return page.getRecords().isEmpty() ? null : page.getRecords().get(0);
     }
 
     public List<Tag> getArticleTags(Long articleId) {

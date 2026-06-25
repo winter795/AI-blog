@@ -1,42 +1,57 @@
 CREATE TABLE IF NOT EXISTS `user` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
     `username` VARCHAR(50) NOT NULL UNIQUE,
-    `password` VARCHAR(255) NOT NULL,
+    `password` VARCHAR(255) NOT NULL COMMENT 'BCrypt 加密',
     `nickname` VARCHAR(50),
     `avatar` VARCHAR(255),
+    `role` VARCHAR(20) DEFAULT 'guest',
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `deleted` TINYINT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 默认管理员: admin / admin123  (BCrypt hash)
+INSERT IGNORE INTO `user` (`username`, `password`, `nickname`, `role`)
+VALUES ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '管理员', 'admin');
+
 CREATE TABLE IF NOT EXISTS `category` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(50) NOT NULL UNIQUE,
+    `name` VARCHAR(50) NOT NULL,
     `description` VARCHAR(200),
     `sort_order` INT DEFAULT 0,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    `deleted` TINYINT DEFAULT 0
+    `deleted` TINYINT DEFAULT 0,
+    UNIQUE KEY `uk_category_name` (`name`, `deleted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `tag` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(50) NOT NULL UNIQUE,
+    `name` VARCHAR(50) NOT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    `deleted` TINYINT DEFAULT 0
+    `deleted` TINYINT DEFAULT 0,
+    UNIQUE KEY `uk_tag_name` (`name`, `deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `site_stat` (
+    `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+    `stat_date` DATE NOT NULL UNIQUE,
+    `pv` BIGINT DEFAULT 0,
+    `uv` BIGINT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `article` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
     `title` VARCHAR(200) NOT NULL,
     `summary` VARCHAR(500),
-    `content` TEXT,
+    `content` MEDIUMTEXT,
     `category_id` BIGINT,
     `status` TINYINT DEFAULT 0,
     `is_top` TINYINT DEFAULT 0,
     `view_count` INT DEFAULT 0,
     `like_count` INT DEFAULT 0,
+    `embedding` MEDIUMTEXT COMMENT '文章向量 (JSON数组)',
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `deleted` TINYINT DEFAULT 0
@@ -70,9 +85,8 @@ CREATE TABLE IF NOT EXISTS `comment` (
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `site_stat` (
+CREATE TABLE IF NOT EXISTS `site_config` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `stat_date` DATE NOT NULL,
-    `pv` BIGINT DEFAULT 0,
-    `uv` BIGINT DEFAULT 0
+    `config_key` VARCHAR(100) NOT NULL UNIQUE,
+    `config_value` TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

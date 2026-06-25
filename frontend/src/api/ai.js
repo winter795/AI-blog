@@ -51,7 +51,3 @@ export function generateSummary(content) {
 export function generateTags(content) {
   return request.post('/admin/ai/tags', { content })
 }
-
-export function generateEmbedding(articleId) {
-  return request.post(`/admin/ai/embedding/${articleId}`)
-}

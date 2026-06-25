@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { marked } from 'marked'
@@ -59,13 +59,13 @@ import CommentSection from '@/components/CommentSection.vue'
 
 const route = useRoute()
 const art = ref(null), tags = ref([]), prev = ref({}), next = ref({}), toc = ref([]), liked = ref(false)
+const html = ref('')
 
-const html = computed(() => {
-  if (!art.value?.content) return ''
+function renderMarkdown(content) {
+  if (!content) { html.value = ''; toc.value = []; return }
   const hs = []
 
-  // 用 lexer 提取标题
-  const tokens = marked.lexer(art.value.content)
+  const tokens = marked.lexer(content)
   tokens.forEach(t => {
     if (t.type === 'heading' && t.depth <= 3) {
       const text = (t.tokens || []).map(tk => tk.text || tk.raw || '').join('') || t.text || ''
@@ -74,28 +74,24 @@ const html = computed(() => {
   })
   toc.value = hs
 
-  // 解析为 HTML
-  let result = marked.parse(art.value.content)
+  let result = marked.parse(content)
 
-  // 注入标题 ID
   let hi = 0
   result = result.replace(/<(h[1-3])>/g, (_, tag) => {
     if (hi < hs.length) return `<${tag} id="${hs[hi++].id}">`
     return `<${tag}>`
   })
 
-  // 用 highlight.js 替换 <pre><code> 中的纯文本
   result = result.replace(/<pre><code(?:\s+class="([^"]*)")?>([\s\S]*?)<\/code><\/pre>/g, (_, cls, text) => {
     const lang = (cls || '').replace('language-', '').trim()
     const language = (lang && hljs.getLanguage(lang)) ? lang : 'plaintext'
-    // text is HTML-escaped, decode it for hljs
     const decoded = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
     const highlighted = hljs.highlight(decoded, { language }).value
     return `<pre><code class="hljs language-${lang}">${highlighted}</code></pre>`
   })
 
-  return result
-})
+  html.value = result
+}
 
 function jump(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }) }
 
@@ -108,7 +104,10 @@ async function doLike() {
 onMounted(async () => {
   const r = await getArticleDetail(route.params.id)
   art.value = r.data.article; tags.value = r.data.tags||[]; prev.value = r.data.prev||{}; next.value = r.data.next||{}
-  if (art.value) useSEO(art.value.title, art.value.summary)
+  if (art.value) {
+    useSEO(art.value.title, art.value.summary)
+    renderMarkdown(art.value.content)
+  }
 })
 </script>
 

@@ -76,7 +76,6 @@ public class CommentService {
     }
 
     public long totalPV() {
-        List<SiteStat> all = siteStatMapper.selectList(null);
-        return all.stream().mapToLong(SiteStat::getPv).sum();
+        return siteStatMapper.sumPV();
     }
 }

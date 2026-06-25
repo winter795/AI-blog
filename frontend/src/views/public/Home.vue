@@ -8,7 +8,7 @@
           <span class="sk-line sk-m"></span>
         </div>
       </div>
-      <div v-else-if="!list.length" class="empty-state">暂无文章</div>
+      <EmptyState v-else-if="!list.length" text="暂无文章" />
       <article v-for="(a, i) in list" :key="a.id" class="art-card" :style="{ animationDelay: i * 60 + 'ms' }">
         <div class="art-top">
           <span class="art-date">{{ a.createdAt?.slice(0, 10) }}</span>
@@ -41,6 +41,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { getArticlePage } from '@/api/public'
 import Sidebar from '@/components/Sidebar.vue'
+import EmptyState from '@/components/EmptyState.vue'
 
 const route = useRoute()
 const list = ref([]), pg = ref(1), ps = ref(10), total = ref(0), loading = ref(false)
@@ -64,7 +65,6 @@ async function load() {
 <style scoped>
 .home-split { display: flex; gap: 32px; align-items: flex-start; }
 .articles { flex: 1; min-width: 0; }
-.empty-state { text-align: center; padding: 100px 20px; color: var(--text-muted); font-size: 14px; }
 .art-card {
   padding: 28px 0; border-bottom: 1px solid var(--border);
   animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;

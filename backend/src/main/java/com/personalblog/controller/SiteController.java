@@ -7,6 +7,7 @@ import com.personalblog.service.CommentService;
 import com.personalblog.service.PublicService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.personalblog.mapper.ArticleMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,9 @@ public class SiteController {
     private final PublicService publicService;
     private final CommentService commentService;
     private final ArticleMapper articleMapper;
+
+    @Value("${blog.domain:http://localhost:5173}")
+    private String siteDomain;
 
     public SiteController(PublicService publicService, CommentService commentService,
                           ArticleMapper articleMapper) {
@@ -66,7 +70,7 @@ public class SiteController {
         sb.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
         for (Article a : articles) {
             sb.append("  <url>\n");
-            sb.append("    <loc>http://localhost:5173/visitor/article/").append(a.getId()).append("</loc>\n");
+            sb.append("    <loc>").append(siteDomain).append("/visitor/article/").append(a.getId()).append("</loc>\n");
             sb.append("    <lastmod>").append(a.getUpdatedAt().toLocalDate()).append("</lastmod>\n");
             sb.append("  </url>\n");
         }
@@ -83,12 +87,12 @@ public class SiteController {
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         sb.append("<rss version=\"2.0\">\n<channel>\n");
         sb.append("  <title>个人AI博客</title>\n");
-        sb.append("  <link>http://localhost:5173/visitor</link>\n");
+        sb.append("  <link>").append(siteDomain).append("/visitor</link>\n");
         sb.append("  <description>个人AI博客 RSS 订阅</description>\n");
         for (Article a : articles) {
             sb.append("  <item>\n");
             sb.append("    <title>").append(escapeXml(a.getTitle())).append("</title>\n");
-            sb.append("    <link>http://localhost:5173/visitor/article/").append(a.getId()).append("</link>\n");
+            sb.append("    <link>").append(siteDomain).append("/visitor/article/").append(a.getId()).append("</link>\n");
             sb.append("    <description>").append(escapeXml(a.getSummary() != null ? a.getSummary() : "")).append("</description>\n");
             sb.append("    <pubDate>").append(a.getCreatedAt()).append("</pubDate>\n");
             sb.append("  </item>\n");

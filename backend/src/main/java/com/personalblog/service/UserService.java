@@ -6,37 +6,35 @@ import com.personalblog.dto.LoginResponse;
 import com.personalblog.entity.User;
 import com.personalblog.mapper.UserMapper;
 import com.personalblog.util.JwtUtil;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
-
-import java.nio.charset.StandardCharsets;
 
 @Service
 public class UserService {
 
     private final UserMapper userMapper;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserMapper userMapper, JwtUtil jwtUtil) {
+    public UserService(UserMapper userMapper, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
         this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public LoginResponse login(LoginRequest request) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, request.getUsername());
         User user = userMapper.selectOne(wrapper);
-        if (user == null) {
+        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("用户名或密码错误");
         }
-        String md5Password = DigestUtils.md5DigestAsHex(
-                request.getPassword().getBytes(StandardCharsets.UTF_8));
-        if (!user.getPassword().equals(md5Password)) {
-            throw new RuntimeException("用户名或密码错误");
-        }
-        String token = jwtUtil.generateToken(user.getId(), user.getUsername(),
-                user.getRole() != null ? user.getRole() : "guest");
         String role = user.getRole() != null ? user.getRole() : "guest";
+        String token = jwtUtil.generateToken(user.getId(), user.getUsername(), role);
         return new LoginResponse(token, user.getNickname(), user.getAvatar(), role);
+    }
+
+    public String encodePassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
     }
 }
